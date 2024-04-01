@@ -1,0 +1,1650 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.8.8"
+    },
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/brmontgomery/483-Intro_To_ML_Assignments/blob/main/Project%203%20-%20Real-World%20Data%2C%20Preprocessing%2C%20and%20Classifier%20Performance\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "wnIZiKWk07qo"
+      },
+      "source": [
+        "##Project 3 - Real-World Data, Preprocessing, and Classifier Performance\n",
+        "**Group members:** Zach Hofmeister, Brian Montgomery, and Karla Cabrera.\n",
+        "\n",
+        "**Section:** CS 483-02\n",
+        "\n",
+        "**Semester:** Fall 2021\n",
+        "\n",
+        "\n",
+        "**Project Summary:** For this project we used scikit-learn to manipulate data from the given dataset. We explored a variety of classification algorithms and compared their performance on a “real-world” dataset."
+      ],
+      "id": "wnIZiKWk07qo"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "6ec668b7-6da1-4e31-b281-9359bd62f2c4"
+      },
+      "source": [
+        "#Experiment 1\n",
+        "Download bank-additional.zip and extract its contents. Use pandas.read_csv() to load and examine the dataset from bank-additional-full.csv, and pandas.DataFrame.head() to examine its contents.\n",
+        "Note that unlike most CSV files, the separator is actually ';' rather than ','. The archive also contains a text file, bank-additional-names.txt, which describes the dataset and what each column represents.\n"
+      ],
+      "id": "6ec668b7-6da1-4e31-b281-9359bd62f2c4"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "tags": [],
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f979474c-0bff-4bde-aea4-b58b29190c69",
+        "outputId": "54ccee58-3c5f-4d78-9e62-2ac86d4a8636"
+      },
+      "source": [
+        "import pandas as pd\n",
+        "#read csv usinf pandas read_csv\n",
+        "# the seperator in this case is ';'\n",
+        "df = pd.read_csv('bank-additional/bank-additional-full.csv', sep =';')\n",
+        "#used pandas.DataFrame.head to examine first 3 rows\n",
+        "print(df.head(3))"
+      ],
+      "id": "f979474c-0bff-4bde-aea4-b58b29190c69",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "   age        job  marital    education  default housing loan    contact  \\\n",
+            "0   56  housemaid  married     basic.4y       no      no   no  telephone   \n",
+            "1   57   services  married  high.school  unknown      no   no  telephone   \n",
+            "2   37   services  married  high.school       no     yes   no  telephone   \n",
+            "\n",
+            "  month day_of_week  ...  campaign  pdays  previous     poutcome emp.var.rate  \\\n",
+            "0   may         mon  ...         1    999         0  nonexistent          1.1   \n",
+            "1   may         mon  ...         1    999         0  nonexistent          1.1   \n",
+            "2   may         mon  ...         1    999         0  nonexistent          1.1   \n",
+            "\n",
+            "   cons.price.idx  cons.conf.idx  euribor3m  nr.employed   y  \n",
+            "0          93.994          -36.4      4.857       5191.0  no  \n",
+            "1          93.994          -36.4      4.857       5191.0  no  \n",
+            "2          93.994          -36.4      4.857       5191.0  no  \n",
+            "\n",
+            "[3 rows x 21 columns]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "YqiN09UtlzyU"
+      },
+      "source": [
+        "##Results\n",
+        "We used pandas.read_csv() to load the data and assign it to a variable. We then used pandas.Dataframe.head to examine the first three rows.\n",
+        "\n",
+        "---\n",
+        "\n"
+      ],
+      "id": "YqiN09UtlzyU"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "e00b4950-66b8-49f9-8676-43bdfbcc900b"
+      },
+      "source": [
+        "#Experiment 2\n",
+        " Use sklearn.model_selection.train_test_split() to split the features and target values into separate training and test sets. Since the dataset is large, use 90% of the original data as a training set, and 10% for testing. To make sure that your results are reproducible, pass the keyword argument random_state=(2021-10-25).\n"
+      ],
+      "id": "e00b4950-66b8-49f9-8676-43bdfbcc900b"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "da02e2e5-2d81-4ee8-bf89-f7c125acc8a8",
+        "outputId": "56f86de9-33ac-404b-d808-b2d4754f83f4"
+      },
+      "source": [
+        "#total num of rows\n",
+        "print(df.shape[0])\n"
+      ],
+      "id": "da02e2e5-2d81-4ee8-bf89-f7c125acc8a8",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "41188\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "e1d6e069-4d69-4ac1-af95-b186aced0611",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "bd52c56a-a446-4250-ba36-97ea63004e24"
+      },
+      "source": [
+        "from sklearn.model_selection import train_test_split\n",
+        "#split the data (10% for testing = 4119 rows, 90% for training= 37,069 rows)\n",
+        "train, test = train_test_split(df, test_size=0.10, train_size=0.90, random_state=(2021-10-25))\n",
+        "print(train.head(3))\n",
+        "print(test.head(3))"
+      ],
+      "id": "e1d6e069-4d69-4ac1-af95-b186aced0611",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "       age         job   marital            education default  housing  \\\n",
+            "22975   56     retired   married  professional.course      no      yes   \n",
+            "14746   26  technician    single  professional.course      no  unknown   \n",
+            "12505   38      admin.  divorced          high.school      no      yes   \n",
+            "\n",
+            "          loan   contact month day_of_week  ...  campaign  pdays  previous  \\\n",
+            "22975       no  cellular   aug         mon  ...         5    999         0   \n",
+            "14746  unknown  cellular   jul         wed  ...         1    999         0   \n",
+            "12505       no  cellular   jul         mon  ...         1    999         0   \n",
+            "\n",
+            "          poutcome emp.var.rate  cons.price.idx  cons.conf.idx  euribor3m  \\\n",
+            "22975  nonexistent          1.4          93.444          -36.1      4.965   \n",
+            "14746  nonexistent          1.4          93.918          -42.7      4.957   \n",
+            "12505  nonexistent          1.4          93.918          -42.7      4.960   \n",
+            "\n",
+            "       nr.employed    y  \n",
+            "22975       5228.1   no  \n",
+            "14746       5228.1  yes  \n",
+            "12505       5228.1   no  \n",
+            "\n",
+            "[3 rows x 21 columns]\n",
+            "       age          job   marital          education  default housing loan  \\\n",
+            "37215   38       admin.    single  university.degree       no     yes   no   \n",
+            "576     41       admin.  divorced        high.school       no      no   no   \n",
+            "14186   35  blue-collar   married        high.school  unknown     yes  yes   \n",
+            "\n",
+            "         contact month day_of_week  ...  campaign  pdays  previous  \\\n",
+            "37215   cellular   aug         fri  ...         1    999         0   \n",
+            "576    telephone   may         tue  ...         4    999         0   \n",
+            "14186  telephone   jul         mon  ...         3    999         0   \n",
+            "\n",
+            "          poutcome emp.var.rate  cons.price.idx  cons.conf.idx  euribor3m  \\\n",
+            "37215  nonexistent         -2.9          92.201          -31.4      0.881   \n",
+            "576    nonexistent          1.1          93.994          -36.4      4.857   \n",
+            "14186  nonexistent          1.4          93.918          -42.7      4.962   \n",
+            "\n",
+            "       nr.employed   y  \n",
+            "37215       5076.2  no  \n",
+            "576         5191.0  no  \n",
+            "14186       5228.1  no  \n",
+            "\n",
+            "[3 rows x 21 columns]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "00CnT4E0PAmp"
+      },
+      "source": [
+        "##Results\n",
+        " We used **sklearn.model_selection.train_test_split()** to split the features and target values. We split 10% of the data for testing (4119 rows) and 90% for training (37,069 rows). We also used head to examine the contents of the test and training data.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "00CnT4E0PAmp"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "2ea2f91a-fe26-4965-9eb7-3dbd653193f8"
+      },
+      "source": [
+        "#Experiment 3\n",
+        " Your training and test sets will need some significant preprocessing before they can be used:\n",
+        "Per the description in bank-additional-names.txt, the duration “should be discarded if the intention is to have a realistic predictive model.”\n",
+        "The feature y is the target response; set this aside for use in training and testing, then drop it from your features.\n",
+        "Note that by default, pandas.DataFrame.drop() does not drop columns in-place.\n"
+      ],
+      "id": "2ea2f91a-fe26-4965-9eb7-3dbd653193f8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "e2d67906-0e58-4d2e-a1ac-e4ae0d9b014d",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "d32e9a05-60ef-4066-cbb8-a87d5e98e338"
+      },
+      "source": [
+        "train.drop(columns= ['duration'], inplace = True)\n",
+        "test.drop(columns= ['duration'], inplace = True)\n",
+        "#print number of columns which is now 20 instead of 21 since duration was dropped\n",
+        "print(train.shape[1])\n",
+        "print(test.shape[1])"
+      ],
+      "id": "e2d67906-0e58-4d2e-a1ac-e4ae0d9b014d",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "20\n",
+            "20\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/Users/zach/opt/anaconda3/lib/python3.8/site-packages/pandas/core/frame.py:4308: SettingWithCopyWarning: \n",
+            "A value is trying to be set on a copy of a slice from a DataFrame\n",
+            "\n",
+            "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+            "  return super().drop(\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "577dad46-4586-4a71-b35d-7b2d0401209c",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "7e18bdd2-1de0-4136-b002-5d465c684053"
+      },
+      "source": [
+        "# set aside y target\n",
+        "y_train = train['y']\n",
+        "y_test = test['y']\n",
+        "\n",
+        "#print some contents to see if it y_target was correctly set aside\n",
+        "print(y_train.head(3))\n",
+        "print(y_test.head(3))\n",
+        "\n",
+        "#convert to list for step 5\n",
+        "y_train = y_train.values.tolist()\n",
+        "y_test = y_test.values.tolist()"
+      ],
+      "id": "577dad46-4586-4a71-b35d-7b2d0401209c",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "22975     no\n",
+            "14746    yes\n",
+            "12505     no\n",
+            "Name: y, dtype: object\n",
+            "37215    no\n",
+            "576      no\n",
+            "14186    no\n",
+            "Name: y, dtype: object\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "1b8ba680-99c0-4c04-b488-369f2900b214",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "bd68d575-d08e-465f-b49c-bbf3b09d7912"
+      },
+      "source": [
+        "#drop the target 'y' column\n",
+        "train.drop(columns= ['y'], inplace = True)\n",
+        "test.drop(columns= ['y'], inplace = True)\n",
+        "#print number of columns which is now 19 instead of 20 since duration was dropped\n",
+        "print(train.shape[1])\n",
+        "print(test.shape[1])"
+      ],
+      "id": "1b8ba680-99c0-4c04-b488-369f2900b214",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "19\n",
+            "19\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "73Su7J5aO_u7"
+      },
+      "source": [
+        "##Results\n",
+        "We used **pandas.DataFrame.drop()** and set inplace to True to discard the **duration**. We then set aside feature y and used head to see if feature y was set aside correctly. Once again, we used **pandas.DataFrame.drop()** and set inplace to True to discard the **y** feauture. When dropping the feauture we used **shape** to see if the number of features were dropped from the dataframe.  \n",
+        "\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "73Su7J5aO_u7"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ab6SjWDe2x9Y"
+      },
+      "source": [
+        "#Experiment 4\n",
+        "First, let’s see if we can determine whether a client will subscribe to a term deposit based on what we know about them. Let’s take as input features the variables described as “bank client data” in bank-additional-names.txt.\n",
+        "\n",
+        "Several of the features are categorical variables that will need to be encoded before they can be treated as vectors. The simplest way to accomplish this is to use pandas.get_dummies().\n",
+        "\n",
+        "Recall that some algorithms (e.g. logistic regression) will have problems with collinear features, so be sure to set the drop_first keyword argument."
+      ],
+      "id": "ab6SjWDe2x9Y"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "wCpMLbjo3AFC",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "dcd7a0c6-aa89-4aa6-bde4-46c45b089d3e"
+      },
+      "source": [
+        "#get dummies for each categorical value in train\n",
+        "train_dummies = pd.get_dummies(train, columns =['job','marital','education','default','housing','loan'], drop_first =True)\n",
+        "#drop unecessary columns (1-15)\n",
+        "train = train_dummies.drop(train_dummies.iloc[:,1:15], axis = 1 )\n",
+        "print(train.head(10))"
+      ],
+      "id": "wCpMLbjo3AFC",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "       age  job_housemaid  job_management  job_retired  job_self-employed  \\\n",
+            "22975   56              0               0            1                  0   \n",
+            "14746   26              0               0            0                  0   \n",
+            "12505   38              0               0            0                  0   \n",
+            "6801    33              0               0            0                  0   \n",
+            "18389   29              0               0            0                  0   \n",
+            "8091    36              0               0            0                  0   \n",
+            "13463   36              0               0            0                  0   \n",
+            "18932   29              0               0            0                  0   \n",
+            "4960    38              0               0            0                  0   \n",
+            "33628   25              0               0            0                  0   \n",
+            "\n",
+            "       job_services  job_student  job_technician  job_unemployed  job_unknown  \\\n",
+            "22975             0            0               0               0            0   \n",
+            "14746             0            0               1               0            0   \n",
+            "12505             0            0               0               0            0   \n",
+            "6801              0            0               0               0            0   \n",
+            "18389             0            0               0               0            0   \n",
+            "8091              0            0               0               0            0   \n",
+            "13463             0            0               1               0            0   \n",
+            "18932             0            0               1               0            0   \n",
+            "4960              0            0               0               1            0   \n",
+            "33628             0            0               0               0            0   \n",
+            "\n",
+            "       ...  education_illiterate  education_professional.course  \\\n",
+            "22975  ...                     0                              1   \n",
+            "14746  ...                     0                              1   \n",
+            "12505  ...                     0                              0   \n",
+            "6801   ...                     0                              0   \n",
+            "18389  ...                     0                              0   \n",
+            "8091   ...                     0                              0   \n",
+            "13463  ...                     0                              0   \n",
+            "18932  ...                     0                              1   \n",
+            "4960   ...                     0                              0   \n",
+            "33628  ...                     0                              0   \n",
+            "\n",
+            "       education_university.degree  education_unknown  default_unknown  \\\n",
+            "22975                            0                  0                0   \n",
+            "14746                            0                  0                0   \n",
+            "12505                            0                  0                0   \n",
+            "6801                             1                  0                0   \n",
+            "18389                            0                  0                0   \n",
+            "8091                             1                  0                0   \n",
+            "13463                            0                  0                0   \n",
+            "18932                            0                  0                0   \n",
+            "4960                             1                  0                0   \n",
+            "33628                            0                  0                0   \n",
+            "\n",
+            "       default_yes  housing_unknown  housing_yes  loan_unknown  loan_yes  \n",
+            "22975            0                0            1             0         0  \n",
+            "14746            0                1            0             1         0  \n",
+            "12505            0                0            1             0         0  \n",
+            "6801             0                0            0             0         0  \n",
+            "18389            0                0            0             0         0  \n",
+            "8091             0                0            1             0         0  \n",
+            "13463            0                0            1             0         0  \n",
+            "18932            0                0            0             0         0  \n",
+            "4960             0                0            1             0         0  \n",
+            "33628            0                0            1             0         0  \n",
+            "\n",
+            "[10 rows x 26 columns]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "t7Ll6_C5M20z",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "519d6f21-7742-4ae9-c51b-d2bb9ffe427e"
+      },
+      "source": [
+        "#get dummies for each categorical value in test\n",
+        "test_dummies = pd.get_dummies(test, columns =['job','marital','education','default','housing','loan'], drop_first =True)\n",
+        "#drop unecessary columns (1-15)\n",
+        "test = test_dummies.drop(train_dummies.iloc[:,1:15], axis = 1 )\n",
+        "print(test.head(10))"
+      ],
+      "id": "t7Ll6_C5M20z",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "       age  job_housemaid  job_management  job_retired  job_self-employed  \\\n",
+            "37215   38              0               0            0                  0   \n",
+            "576     41              0               0            0                  0   \n",
+            "14186   35              0               0            0                  0   \n",
+            "4527    26              0               0            0                  0   \n",
+            "3900    43              0               0            0                  0   \n",
+            "11091   32              0               0            0                  0   \n",
+            "23338   52              0               0            0                  0   \n",
+            "33487   32              0               1            0                  0   \n",
+            "10112   48              0               0            0                  0   \n",
+            "25344   38              0               0            0                  0   \n",
+            "\n",
+            "       job_services  job_student  job_technician  job_unemployed  job_unknown  \\\n",
+            "37215             0            0               0               0            0   \n",
+            "576               0            0               0               0            0   \n",
+            "14186             0            0               0               0            0   \n",
+            "4527              0            0               0               0            0   \n",
+            "3900              0            0               0               0            0   \n",
+            "11091             0            0               0               0            0   \n",
+            "23338             0            0               1               0            0   \n",
+            "33487             0            0               0               0            0   \n",
+            "10112             0            0               0               0            0   \n",
+            "25344             0            0               1               0            0   \n",
+            "\n",
+            "       ...  education_illiterate  education_professional.course  \\\n",
+            "37215  ...                     0                              0   \n",
+            "576    ...                     0                              0   \n",
+            "14186  ...                     0                              0   \n",
+            "4527   ...                     0                              0   \n",
+            "3900   ...                     0                              0   \n",
+            "11091  ...                     0                              0   \n",
+            "23338  ...                     0                              0   \n",
+            "33487  ...                     0                              0   \n",
+            "10112  ...                     0                              0   \n",
+            "25344  ...                     0                              0   \n",
+            "\n",
+            "       education_university.degree  education_unknown  default_unknown  \\\n",
+            "37215                            1                  0                0   \n",
+            "576                              0                  0                0   \n",
+            "14186                            0                  0                1   \n",
+            "4527                             0                  0                0   \n",
+            "3900                             0                  0                0   \n",
+            "11091                            0                  0                1   \n",
+            "23338                            1                  0                0   \n",
+            "33487                            1                  0                1   \n",
+            "10112                            0                  0                1   \n",
+            "25344                            0                  0                0   \n",
+            "\n",
+            "       default_yes  housing_unknown  housing_yes  loan_unknown  loan_yes  \n",
+            "37215            0                0            1             0         0  \n",
+            "576              0                0            0             0         0  \n",
+            "14186            0                0            1             0         1  \n",
+            "4527             0                0            1             0         1  \n",
+            "3900             0                0            0             0         0  \n",
+            "11091            0                0            1             0         0  \n",
+            "23338            0                0            0             0         0  \n",
+            "33487            0                0            1             0         1  \n",
+            "10112            0                0            0             0         0  \n",
+            "25344            0                0            1             0         0  \n",
+            "\n",
+            "[10 rows x 26 columns]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "x9SldUuBO-Bx"
+      },
+      "source": [
+        "##Results\n",
+        "We encoded the categorical variables for both the train and test dataframes in order for them to be treated as vectors. We only want to focus on bank client data so all other columns have to be dropped. We used **pandas.DataFrame.drop()** to drop the unnecesarry columns.   \n",
+        "\n",
+        "---\n"
+      ],
+      "id": "x9SldUuBO-Bx"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "017O-LCIOBXO"
+      },
+      "source": [
+        "#Experiment 5\n",
+        "\n",
+        "Use scikit-learn to fit a Categorical Naive Bayes classifier to the training set, then score it on both the training and test sets. How accurate is the classifier?"
+      ],
+      "id": "017O-LCIOBXO"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "edly_dFLO5sZ"
+      },
+      "source": [
+        "# #fixing a negative number error using a 0 to 1 scale for all features.\n",
+        "# from sklearn.preprocessing import MinMaxScaler\n",
+        "\n",
+        "# #scale the features from 0 to 1\n",
+        "# scaler = MinMaxScaler()\n",
+        "# train = pd.DataFrame(scaler.fit_transform(train))\n",
+        "# test = pd.DataFrame(scaler.fit_transform(test))\n",
+        "\n",
+        "# print(test.head(3))\n",
+        "# print(y_test)\n",
+        "\n",
+        "# #function for testing the Naive Bayes model\n",
+        "# from sklearn.naive_bayes import CategoricalNB\n",
+        "# clf = CategoricalNB()\n",
+        "# clf.fit(train, y_train)\n",
+        "# #predict using the training and test sets\n",
+        "# print(clf.score(train, y_train))\n",
+        "# print(clf.score(test, y_test))"
+      ],
+      "id": "edly_dFLO5sZ",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XCeKZCD8nGfA",
+        "outputId": "6e887456-f898-4535-eba0-051f9d7e46b0"
+      },
+      "source": [
+        "#function for testing the Naive Bayes model\n",
+        "from sklearn.naive_bayes import CategoricalNB\n",
+        "clf = CategoricalNB()\n",
+        "clf.fit(train, y_train)\n",
+        "\n",
+        "#predict using the training and test sets\n",
+        "print(clf.score(train, y_train))\n",
+        "print(clf.score(test, y_test))"
+      ],
+      "id": "XCeKZCD8nGfA",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "0.8832447597723165\n",
+            "0.8810390871570769\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4n03C7EpO8ZV"
+      },
+      "source": [
+        "##Results\n",
+        "We used scikit-learn to fit a Categorical Naive Bayes classifier to the training set. We then scored it on both the training and test sets. Both scores are fairly close to each other. Due to both scores being high it tells us that the classifier is accurate.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "4n03C7EpO8ZV"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "6TTjpvT_OPs4"
+      },
+      "source": [
+        "#Experiment 6\n",
+        "\n",
+        "Take another look at the data you used for the previous experiment. Most of the data is categorical, but age is a quantitative predictor. Categorical Naive Bayes assumes that each value of the age variable is a separate category. How many categories are there? Is this reasonable?\n"
+      ],
+      "id": "6TTjpvT_OPs4"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ks5R-5A-O6L1",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "a2300ed0-c050-49e2-e7b8-469768fb5094"
+      },
+      "source": [
+        "test.nunique()"
+      ],
+      "id": "ks5R-5A-O6L1",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "age                              68\n",
+              "job_housemaid                     2\n",
+              "job_management                    2\n",
+              "job_retired                       2\n",
+              "job_self-employed                 2\n",
+              "job_services                      2\n",
+              "job_student                       2\n",
+              "job_technician                    2\n",
+              "job_unemployed                    2\n",
+              "job_unknown                       2\n",
+              "marital_married                   2\n",
+              "marital_single                    2\n",
+              "marital_unknown                   2\n",
+              "education_basic.6y                2\n",
+              "education_basic.9y                2\n",
+              "education_high.school             2\n",
+              "education_illiterate              2\n",
+              "education_professional.course     2\n",
+              "education_university.degree       2\n",
+              "education_unknown                 2\n",
+              "default_unknown                   2\n",
+              "default_yes                       2\n",
+              "housing_unknown                   2\n",
+              "housing_yes                       2\n",
+              "loan_unknown                      2\n",
+              "loan_yes                          2\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 33
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Qz4u8VObBhVs",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "f4d7aad3-1149-4589-9f1a-c510c1977949"
+      },
+      "source": [
+        "train.nunique()"
+      ],
+      "id": "Qz4u8VObBhVs",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "age                              78\n",
+              "job_housemaid                     2\n",
+              "job_management                    2\n",
+              "job_retired                       2\n",
+              "job_self-employed                 2\n",
+              "job_services                      2\n",
+              "job_student                       2\n",
+              "job_technician                    2\n",
+              "job_unemployed                    2\n",
+              "job_unknown                       2\n",
+              "marital_married                   2\n",
+              "marital_single                    2\n",
+              "marital_unknown                   2\n",
+              "education_basic.6y                2\n",
+              "education_basic.9y                2\n",
+              "education_high.school             2\n",
+              "education_illiterate              2\n",
+              "education_professional.course     2\n",
+              "education_university.degree       2\n",
+              "education_unknown                 2\n",
+              "default_unknown                   2\n",
+              "default_yes                       2\n",
+              "housing_unknown                   2\n",
+              "housing_yes                       2\n",
+              "loan_unknown                      2\n",
+              "loan_yes                          2\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 34
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "BJHtV-9wBqHQ",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "a6989e1c-a56d-4a20-fa7d-62e41a503605"
+      },
+      "source": [
+        "df.nunique()"
+      ],
+      "id": "BJHtV-9wBqHQ",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "age                 78\n",
+              "job                 12\n",
+              "marital              4\n",
+              "education            8\n",
+              "default              3\n",
+              "housing              3\n",
+              "loan                 3\n",
+              "contact              2\n",
+              "month               10\n",
+              "day_of_week          5\n",
+              "duration          1544\n",
+              "campaign            42\n",
+              "pdays               27\n",
+              "previous             8\n",
+              "poutcome             3\n",
+              "emp.var.rate        10\n",
+              "cons.price.idx      26\n",
+              "cons.conf.idx       26\n",
+              "euribor3m          316\n",
+              "nr.employed         11\n",
+              "y                    2\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 35
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "RX5AGLrqO7x3"
+      },
+      "source": [
+        "##Results\n",
+        "Using pandas nunique function we can see the distict values of the variables in each dataframe. We used nunique on the test, train, and df dataframes. Since, test accounts for only 10% of the data there are only 68 unique ages. However, for test and df we have 78 unique age values. Since df accounts for the whole data we can assume there are 78 unique age values. This is reasonble since there can be a wide range of ages having bank accounts.  \n",
+        "\n",
+        "---\n"
+      ],
+      "id": "RX5AGLrqO7x3"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "9coGUr7JORkR"
+      },
+      "source": [
+        "#Experiment 7\n",
+        "\n",
+        "Try splitting ages into bins, one per decade. Verify the number of bins, then re-train your classifier the bins instead of the original age value. Does its performance change?\n",
+        "\n"
+      ],
+      "id": "9coGUr7JORkR"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "-Pkafs9lO66x",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "9acace3e-909a-4396-a8d8-4203d3cc947b"
+      },
+      "source": [
+        "import numpy as np\n",
+        "\n",
+        "#vars for creating bins\n",
+        "bins = [-np.inf, 30, 40, 50, 60, np.inf]\n",
+        "cateNames = [\"0-29\", \"30-39\", \"40-49\", \"50-59\", \"60+\"]\n",
+        "\n",
+        "#create train age bins\n",
+        "train_agebins = train.copy()\n",
+        "train_agebins[\"age_bin\"] = pd.cut(train_agebins[\"age\"], bins, labels=cateNames)\n",
+        "train_agebins = pd.get_dummies(train_agebins, columns =['age_bin'], drop_first =True)\n",
+        "train_agebins = train_agebins.drop(labels=[\"age\"], axis = 1 )\n",
+        "\n",
+        "#create test age bins\n",
+        "test_agebins = test.copy()\n",
+        "test_agebins[\"age_bin\"] = pd.cut(test_agebins[\"age\"], bins, labels=cateNames)\n",
+        "test_agebins = pd.get_dummies(test_agebins, columns =['age_bin'], drop_first =True)\n",
+        "test_agebins = test_agebins.drop(labels=[\"age\"], axis = 1 )\n",
+        "\n",
+        "# print(train_agebins.head(10))\n",
+        "# print(test_agebins.head(10))\n",
+        "\n",
+        "#create new classifier using training set with age bins\n",
+        "clf_agebins = CategoricalNB()\n",
+        "clf_agebins.fit(train_agebins, y_train)\n",
+        "\n",
+        "#predict using the training and test sets\n",
+        "train_agebins_score = clf_agebins.score(train_agebins, y_train)\n",
+        "test_agebins_score = clf_agebins.score(test_agebins, y_test)\n",
+        "print(f\"Train score with age categories: {train_agebins_score}\")\n",
+        "print(f\"Test score with age categories: {test_agebins_score}\")"
+      ],
+      "id": "-Pkafs9lO66x",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Train score with age categories: 0.8844587121314306\n",
+            "Test score with age categories: 0.8803107550376305\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dKbYveaGO7RR"
+      },
+      "source": [
+        "## Results\n",
+        "\n",
+        "Splitting the age data into bins allows us to better fit the training data, but the model doesn't generalize as well when we use it on the test data.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "dKbYveaGO7RR"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "QRQZIkCLOTQ_"
+      },
+      "source": [
+        "#Experiment 8\n",
+        "\n",
+        "Repeat experiment (5) (i.e. with the original age values) with a KNN classifier. How do the results compare?\n",
+        "\n",
+        "Note that since KNN requires a pass over the data for each prediction, this classifier may take several minutes to score.\n"
+      ],
+      "id": "QRQZIkCLOTQ_"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "qU7-bIYbPHKd",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "ed5eb832-e5ba-4a21-957b-b15b5b091019"
+      },
+      "source": [
+        "from sklearn.neighbors import KNeighborsClassifier\n",
+        "neigh = KNeighborsClassifier()\n",
+        "neigh.fit(train, y_train)\n",
+        "#predict using the training and test sets\n",
+        "print(f\"Train score with KNN: {neigh.score(train, y_train)}\")\n",
+        "print(f\"Test score with KNN: {neigh.score(test, y_test)}\")\n"
+      ],
+      "id": "qU7-bIYbPHKd",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Train score with KNN: 0.8906363808033667\n",
+            "Test score with KNN: 0.8803107550376305\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "wOvGAuEJPHll"
+      },
+      "source": [
+        "## Results\n",
+        "Similar to experiment 5, used scikit-learn to fit a KNN classifier to the training set. We then scored it on both the training and test sets. In comparison to the Categorical Naive Baye classifier which scored instantly, we noticed the KNN classifier took much longer to score. Although the score of experiment 5 and experiment 8 are close, experiment 8 has higher train and test score.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "wOvGAuEJPHll"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "nChIszq6OUCt"
+      },
+      "source": [
+        "# Experiment 9\n",
+        "\n",
+        "In the previous experiments, you should have found that your test results are suspiciously similar. Let’s take a closer look.\n",
+        "\n",
+        "How many values in the test set have response 0, and how many have response 1? What would be the score if we simply assumed that no customer ever subscribed to the product?\n"
+      ],
+      "id": "nChIszq6OUCt"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ZH1Ydo02PIgm",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "aef786da-c68e-4951-d9b5-d6ebabbd69cc"
+      },
+      "source": [
+        "response, frequency = np.unique(y_test, return_counts=True)\n",
+        "respArr = np.asarray((response,frequency)).T\n",
+        "for r, f in respArr:\n",
+        "  print(f\"{r}: {f}\")\n",
+        "\n",
+        "score = int(respArr[0][1]) / len(y_test)\n",
+        "print(f\"Score if no one subscribed: {score}\\n\")"
+      ],
+      "id": "ZH1Ydo02PIgm",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "no: 3646\n",
+            "yes: 473\n",
+            "Score if no one subscribed: 0.8851663025006069\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "zVRL0kd9PIyn"
+      },
+      "source": [
+        "## Results\n",
+        "\n",
+        "Only around 11% of the responses in the test data are 'yes' (1), meaning that we would only get 11.5% of our guesses wrong if we simply always guessed 'no'. The score for all 'no' responses is ~0.885, which is slightly higher than most of the predictions we've seen in other experiments.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "zVRL0kd9PIyn"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "9k4VrHesOU16"
+      },
+      "source": [
+        "# Experiment 10\n",
+        "\n",
+        "Use numpy.zeros_like() to create a target vector representing the output of the “dumb” classifier of experiment (5), then create a confusion matrix and find its AUC."
+      ],
+      "id": "9k4VrHesOU16"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "XIJaKtnMPJ1R",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "5bbf6dd5-34ac-4ac0-8293-5c31b7e08239"
+      },
+      "source": [
+        "from sklearn.metrics import confusion_matrix, roc_auc_score\n",
+        "\n",
+        "y_pred_dumb = np.full_like(y_test, \"no\")\n",
+        "cm_dumb = confusion_matrix(y_test, y_pred_dumb).T\n",
+        "auc_dumb = roc_auc_score(y_test, np.ones_like(y_test, dtype=np.single))\n",
+        "# print(y_test)\n",
+        "# print(y_test_dumb)\n",
+        "print(f\"Confusion matrix for dumb prediction:\\n{cm_dumb}\")\n",
+        "print(f\"AUC for dumb prediction:\\n{auc_dumb}\")"
+      ],
+      "id": "XIJaKtnMPJ1R",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Confusion matrix for dumb prediction:\n",
+            "[[3646  473]\n",
+            " [   0    0]]\n",
+            "AUC for dumb prediction:\n",
+            "0.5\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "CrMZRVFDPKKV"
+      },
+      "source": [
+        "## Results\n",
+        "\n",
+        "Our confusion matrix correctly shows that the 'dumb' classifier results in 3646 true 'positives' (positive meaning 'no' in this case) and 473 false positives.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "CrMZRVFDPKKV"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "iyeaTXFpOVpL"
+      },
+      "source": [
+        "#Experiment 11\n",
+        "\n",
+        "Create confusion matrices and compute the AUC for each of the classifiers in experiments (7) and (8). How well are these classifiers actually performing?"
+      ],
+      "id": "iyeaTXFpOVpL"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "pPaCbAdjPK9N",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "cddb9549-d664-4946-9b0c-82e6d60611a3"
+      },
+      "source": [
+        "y_pred_7 = clf_agebins.predict(test_agebins)\n",
+        "cm_7 = confusion_matrix(y_test, y_pred_7).T\n",
+        "auc_7 = roc_auc_score(y_test, clf_agebins.predict_proba(test_agebins)[:, 1])\n",
+        "\n",
+        "y_pred_8 = neigh.predict(test)\n",
+        "cm_8 = confusion_matrix(y_test, y_pred_8).T\n",
+        "auc_8 = roc_auc_score(y_test, neigh.predict_proba(test)[:, 1])\n",
+        "\n",
+        "print(f\"Confusion matrix for experiment 7 (CategoricalNB w/ binned age) prediction:\\n{cm_7}\")\n",
+        "print(f\"AUC for experiment 7 prediction:\\n{auc_7}\")\n",
+        "print()\n",
+        "print(f\"Confusion matrix for experiment 8 (KNN) prediction:\\n{cm_8}\")\n",
+        "print(f\"AUC for experiment 8 prediction:\\n{auc_8}\")"
+      ],
+      "id": "pPaCbAdjPK9N",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Confusion matrix for experiment 7 (CategoricalNB w/ binned age) prediction:\n",
+            "[[3582  429]\n",
+            " [  64   44]]\n",
+            "AUC for experiment 7 prediction:\n",
+            "0.637610912477284\n",
+            "\n",
+            "Confusion matrix for experiment 8 (KNN) prediction:\n",
+            "[[3578  425]\n",
+            " [  68   48]]\n",
+            "AUC for experiment 8 prediction:\n",
+            "0.5925616882702698\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "eY9zaQXAPLI3"
+      },
+      "source": [
+        "## Results\n",
+        "\n",
+        "Both of these classifiers are great at classifying 'no' values, but predict ~10 times more false negatives ('yes' results) than true negatives.\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "eY9zaQXAPLI3"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "n-c_eRMhOWmu"
+      },
+      "source": [
+        "#Experiment 12\n",
+        "\n",
+        "It should be clear from your results that we are dealing with imbalanced data. One of the easiest ways to deal with an unbalanced dataset is random oversampling.\n",
+        "\n",
+        "Use pandas.DataFrame.where() and pandas.DataFrame.sample() to generate  balanced training sets. To make sure that your results are reproducible, pass the keyword argument random_state=(2021-10-25)."
+      ],
+      "id": "n-c_eRMhOWmu"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "HLhvWtIUPNYi",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "4f60048c-c5e8-45a7-8eda-c76dada28d7b"
+      },
+      "source": [
+        "#first get the training set matched up to make things easier\n",
+        "trainBal = train.copy()\n",
+        "trainBal[\"y\"] = y_train.copy()\n",
+        "filter = trainBal[\"y\"] == \"yes\"\n",
+        "\n",
+        "#get the minority class separated\n",
+        "minority = trainBal.where(filter)\n",
+        "minority.dropna(subset = [\"age\"], inplace=True)\n",
+        "\n",
+        "#append the minority using the df.sample method\n",
+        "trainBal = trainBal.append(minority.sample(n = len(trainBal) - len(minority), replace=True, random_state=(2021-10-25)))\n",
+        "\n",
+        "#re-separate the y column\n",
+        "y_trainBal = trainBal['y']\n",
+        "y_trainBal = y_trainBal.values.tolist()\n",
+        "trainBal.drop(columns= ['y'], inplace = True)\n",
+        "print(trainBal)"
+      ],
+      "id": "HLhvWtIUPNYi",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "        age  job_housemaid  job_management  job_retired  job_self-employed  \\\n",
+            "22975  56.0            0.0             0.0          1.0                0.0   \n",
+            "14746  26.0            0.0             0.0          0.0                0.0   \n",
+            "12505  38.0            0.0             0.0          0.0                0.0   \n",
+            "6801   33.0            0.0             0.0          0.0                0.0   \n",
+            "18389  29.0            0.0             0.0          0.0                0.0   \n",
+            "...     ...            ...             ...          ...                ...   \n",
+            "13820  31.0            0.0             0.0          0.0                0.0   \n",
+            "39220  34.0            0.0             0.0          0.0                0.0   \n",
+            "39478  75.0            0.0             0.0          1.0                0.0   \n",
+            "38420  42.0            0.0             0.0          0.0                0.0   \n",
+            "36693  48.0            0.0             0.0          0.0                0.0   \n",
+            "\n",
+            "       job_services  job_student  job_technician  job_unemployed  job_unknown  \\\n",
+            "22975           0.0          0.0             0.0             0.0          0.0   \n",
+            "14746           0.0          0.0             1.0             0.0          0.0   \n",
+            "12505           0.0          0.0             0.0             0.0          0.0   \n",
+            "6801            0.0          0.0             0.0             0.0          0.0   \n",
+            "18389           0.0          0.0             0.0             0.0          0.0   \n",
+            "...             ...          ...             ...             ...          ...   \n",
+            "13820           0.0          0.0             1.0             0.0          0.0   \n",
+            "39220           0.0          0.0             0.0             0.0          0.0   \n",
+            "39478           0.0          0.0             0.0             0.0          0.0   \n",
+            "38420           0.0          0.0             0.0             0.0          0.0   \n",
+            "36693           0.0          0.0             0.0             0.0          0.0   \n",
+            "\n",
+            "       ...  education_illiterate  education_professional.course  \\\n",
+            "22975  ...                   0.0                            1.0   \n",
+            "14746  ...                   0.0                            1.0   \n",
+            "12505  ...                   0.0                            0.0   \n",
+            "6801   ...                   0.0                            0.0   \n",
+            "18389  ...                   0.0                            0.0   \n",
+            "...    ...                   ...                            ...   \n",
+            "13820  ...                   0.0                            1.0   \n",
+            "39220  ...                   0.0                            0.0   \n",
+            "39478  ...                   0.0                            0.0   \n",
+            "38420  ...                   0.0                            1.0   \n",
+            "36693  ...                   0.0                            0.0   \n",
+            "\n",
+            "       education_university.degree  education_unknown  default_unknown  \\\n",
+            "22975                          0.0                0.0              0.0   \n",
+            "14746                          0.0                0.0              0.0   \n",
+            "12505                          0.0                0.0              0.0   \n",
+            "6801                           1.0                0.0              0.0   \n",
+            "18389                          0.0                0.0              0.0   \n",
+            "...                            ...                ...              ...   \n",
+            "13820                          0.0                0.0              0.0   \n",
+            "39220                          1.0                0.0              0.0   \n",
+            "39478                          0.0                0.0              0.0   \n",
+            "38420                          0.0                0.0              0.0   \n",
+            "36693                          1.0                0.0              0.0   \n",
+            "\n",
+            "       default_yes  housing_unknown  housing_yes  loan_unknown  loan_yes  \n",
+            "22975          0.0              0.0          1.0           0.0       0.0  \n",
+            "14746          0.0              1.0          0.0           1.0       0.0  \n",
+            "12505          0.0              0.0          1.0           0.0       0.0  \n",
+            "6801           0.0              0.0          0.0           0.0       0.0  \n",
+            "18389          0.0              0.0          0.0           0.0       0.0  \n",
+            "...            ...              ...          ...           ...       ...  \n",
+            "13820          0.0              0.0          0.0           0.0       0.0  \n",
+            "39220          0.0              0.0          1.0           0.0       0.0  \n",
+            "39478          0.0              0.0          0.0           0.0       0.0  \n",
+            "38420          0.0              0.0          0.0           0.0       0.0  \n",
+            "36693          0.0              0.0          1.0           0.0       0.0  \n",
+            "\n",
+            "[69971 rows x 26 columns]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "IFncJyqZPN5U"
+      },
+      "source": [
+        "##Results\n",
+        "\n",
+        "After getting the trainning data matched up and the minority class seperated using the where function, we appended minority to the balanced training data set. We then reseperated the y comlumn and printed out the balance training dataset to examine the contents.\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "IFncJyqZPN5U"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4ysQ135cOXh8"
+      },
+      "source": [
+        "#Experiment 13\n",
+        "\n",
+        "Retrain both classifiers on balanced training sets, and find the score, confusion matrix, and AUC for each. Which classifier performs better?"
+      ],
+      "id": "4ysQ135cOXh8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "g3PGsLFDPOxf",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "6de49fd2-7431-4a8c-f453-89a327fff031"
+      },
+      "source": [
+        "import numpy as np\n",
+        "\n",
+        "#create train age bins\n",
+        "train_agebinsBal = trainBal.copy()\n",
+        "train_agebinsBal[\"age_bin\"] = pd.cut(train_agebinsBal[\"age\"], bins, labels=cateNames)\n",
+        "train_agebinsBal = pd.get_dummies(train_agebinsBal, columns =['age_bin'], drop_first =True)\n",
+        "train_agebinsBal = train_agebinsBal.drop(labels=[\"age\"], axis = 1 )\n",
+        "\n",
+        "#create new NB classifier using balanced training set with age bins\n",
+        "clf_agebinsBal = CategoricalNB()\n",
+        "clf_agebinsBal.fit(train_agebinsBal, y_trainBal)\n",
+        "\n",
+        "#predict using the training and test sets\n",
+        "train_agebins_scoreBal = clf_agebinsBal.score(train_agebinsBal, y_trainBal)\n",
+        "test_agebins_scoreBal = clf_agebinsBal.score(test_agebins, y_test)\n",
+        "print(f\"Balanced train score with age categories: {train_agebins_scoreBal}\")\n",
+        "print(f\"Balanced test score with age categories: {test_agebins_scoreBal}\")"
+      ],
+      "id": "g3PGsLFDPOxf",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Balanced train score with age categories: 0.6037644166869132\n",
+            "Balanced test score with age categories: 0.5785384802136441\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "rzNJPtL9FdZq",
+        "outputId": "133912dd-5a38-4363-d2db-44831dc41acd"
+      },
+      "source": [
+        "#create new KNN classifier using balanced training set\n",
+        "neighBal = KNeighborsClassifier()\n",
+        "neighBal.fit(trainBal, y_trainBal)\n",
+        "#predict using the training and test sets\n",
+        "print(f\"Balanced Train score with KNN: {neighBal.score(trainBal, y_trainBal)}\")\n",
+        "print(f\"Balanced Test score with KNN: {neighBal.score(test, y_test)}\")"
+      ],
+      "id": "rzNJPtL9FdZq",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Balanced Train score with KNN: 0.7591144902888339\n",
+            "Balanced Test score with KNN: 0.6164117504248604\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "DNehL7MPFx7Z",
+        "outputId": "f3cf05ad-a9a6-4bc6-f18f-d0ea175b2f6b"
+      },
+      "source": [
+        "y_pred_7Bal = clf_agebinsBal.predict(test_agebins)\n",
+        "cm_7Bal = confusion_matrix(y_test, y_pred_7Bal).T\n",
+        "auc_7Bal = roc_auc_score(y_test, clf_agebinsBal.predict_proba(test_agebins)[:, 1])\n",
+        "\n",
+        "y_pred_8Bal = neighBal.predict(test)\n",
+        "cm_8Bal = confusion_matrix(y_test, y_pred_8Bal).T\n",
+        "auc_8Bal = roc_auc_score(y_test, neighBal.predict_proba(test)[:, 1])\n",
+        "\n",
+        "print(f\"Balanced Confusion matrix for experiment 7 (CategoricalNB w/ binned age) prediction:\\n{cm_7Bal}\")\n",
+        "print(f\"Balanced AUC for experiment 7 prediction:\\n{auc_7Bal}\")\n",
+        "print()\n",
+        "print(f\"Balanced Confusion matrix for experiment 8 (KNN) prediction:\\n{cm_8Bal}\")\n",
+        "print(f\"Balanced AUC for experiment 8 prediction:\\n{auc_8Bal}\")"
+      ],
+      "id": "DNehL7MPFx7Z",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Balanced Confusion matrix for experiment 7 (CategoricalNB w/ binned age) prediction:\n",
+            "[[2106 1540]\n",
+            " [ 196  277]]\n",
+            "Balanced AUC for experiment 7 prediction:\n",
+            "0.6370954180723408\n",
+            "\n",
+            "Balanced Confusion matrix for experiment 8 (KNN) prediction:\n",
+            "[[2286 1360]\n",
+            " [ 220  253]]\n",
+            "Balanced AUC for experiment 8 prediction:\n",
+            "0.6082486063095587\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "oTjfmwwmPPJv"
+      },
+      "source": [
+        "##Results\n",
+        "After finding the score on both classifiers, the highest score came from the KNN classifier. Therefore, the **KNN** classifier performed better.\n",
+        "\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "oTjfmwwmPPJv"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "frLfgzNPOYl4"
+      },
+      "source": [
+        "#Experiment 14\n",
+        "\n",
+        "So far, we have been using data about our clients to predict subscriptions. But perhaps their decisions are influenced more by the overall health of the economy than by their individual circumstances.\n",
+        "\n",
+        "Let’s try the input variables described as “social and economic context attributes” in bank-additional-names.txt. These features are quantitative, so you can use Gaussian Naive Bayes. Based on the score, confusion matrix, and AUC, how well does this data predict the response?"
+      ],
+      "id": "frLfgzNPOYl4"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "qeL8ft2iPPw8",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "186df37c-5522-4e2f-d4c3-1b2b0d589cad"
+      },
+      "source": [
+        "from sklearn.naive_bayes import GaussianNB\n",
+        "\n",
+        "#get the train and test with just the 5 social and economic fields\n",
+        "dfSE = pd.read_csv('bank-additional/bank-additional-full.csv', sep =';')\n",
+        "trainSE, testSE = train_test_split(dfSE, test_size=0.10, train_size=0.90, random_state=(2021-10-25))\n",
+        "y_trainSE = trainSE['y']\n",
+        "y_testSE = testSE['y']\n",
+        "trainSE = trainSE[['emp.var.rate','cons.price.idx','cons.conf.idx','euribor3m','nr.employed']]\n",
+        "testSE = testSE[['emp.var.rate','cons.price.idx','cons.conf.idx','euribor3m','nr.employed']]\n",
+        "\n",
+        "#train the Gaussian Naive Bayes' set\n",
+        "gnb = GaussianNB()\n",
+        "gnb.fit(trainSE, y_trainSE)\n",
+        "\n",
+        "#predict using the training and test sets\n",
+        "print(gnb.score(trainSE, y_trainSE))\n",
+        "print(gnb.score(testSE, y_testSE))\n",
+        "\n",
+        "#confusion matrix\n",
+        "y_pred_SE = gnb.predict(testSE)\n",
+        "cm_SE = confusion_matrix(y_testSE, y_pred_SE).T\n",
+        "auc_SE = roc_auc_score(y_testSE, gnb.predict_proba(testSE)[:, 1])\n",
+        "\n",
+        "print(f\"Confusion matrix for Social/Economic GNB prediction:\\n{cm_SE}\")\n",
+        "print(f\"AUC for Social/Economic GNB prediction:\\n{auc_SE}\")"
+      ],
+      "id": "qeL8ft2iPPw8",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "0.7199816558310178\n",
+            "0.7193493566399611\n",
+            "Confusion matrix for Social/Economic GNB prediction:\n",
+            "[[2634  144]\n",
+            " [1012  329]]\n",
+            "AUC for Social/Economic GNB prediction:\n",
+            "0.7348436526924581\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "7LIg3hINPQIu"
+      },
+      "source": [
+        "##Results\n",
+        "After adding the social and economic context attributes and obtaining the scores, we obtained higher scores. Therefore, adding this data helps improve the prediction.\n",
+        "\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "7LIg3hINPQIu"
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "GFZxxObEOZga"
+      },
+      "source": [
+        "#Experiment 15\n",
+        "\n",
+        "Do the results of the last experiment change if the training set is balanced?"
+      ],
+      "id": "GFZxxObEOZga"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Y2S3UFVmPQsE",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "2a90ff06-e64c-4185-c4ee-433e7dc56a8e"
+      },
+      "source": [
+        "#first get the training set matched up to make things easier\n",
+        "trainSEBal = trainSE.copy()\n",
+        "trainSEBal[\"y\"] = y_trainSE.copy()\n",
+        "filter = trainSEBal[\"y\"] == \"yes\"\n",
+        "\n",
+        "#get the minority class separated\n",
+        "minority = trainSEBal.where(filter)\n",
+        "minority.dropna(subset = [\"emp.var.rate\"], inplace=True)\n",
+        "\n",
+        "#append the minority using the df.sample method\n",
+        "trainSEBal = trainSEBal.append(minority.sample(n = len(trainSEBal) - len(minority), replace=True, random_state=(2021-10-25)))\n",
+        "\n",
+        "#re-separate the y column\n",
+        "y_trainSEBal = trainSEBal['y']\n",
+        "y_trainSEBal = y_trainSEBal.values.tolist()\n",
+        "trainSEBal.drop(columns= ['y'], inplace = True)\n",
+        "print(trainSEBal)\n",
+        "\n",
+        "#train\n",
+        "gnbBal = GaussianNB()\n",
+        "gnbBal.fit(trainSEBal, y_trainSEBal)\n",
+        "\n",
+        "#predict using the training and test sets\n",
+        "print(gnbBal.score(trainSEBal, y_trainSEBal))\n",
+        "print(gnbBal.score(testSE, y_testSE))\n",
+        "\n",
+        "#confusion matrix\n",
+        "y_pred_SEBal = gnbBal.predict(testSE)\n",
+        "cm_SEBal = confusion_matrix(y_testSE, y_pred_SEBal).T\n",
+        "auc_SEBal = roc_auc_score(y_testSE, gnbBal.predict_proba(testSE)[:, 1])\n",
+        "\n",
+        "print(f\"Confusion matrix for Balanced Social/Economic GNB prediction:\\n{cm_SEBal}\")\n",
+        "print(f\"AUC for Balanced Social/Economic GNB prediction:\\n{auc_SEBal}\")"
+      ],
+      "id": "Y2S3UFVmPQsE",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "       emp.var.rate  cons.price.idx  cons.conf.idx  euribor3m  nr.employed\n",
+            "22975           1.4          93.444          -36.1      4.965       5228.1\n",
+            "14746           1.4          93.918          -42.7      4.957       5228.1\n",
+            "12505           1.4          93.918          -42.7      4.960       5228.1\n",
+            "6801            1.1          93.994          -36.4      4.857       5191.0\n",
+            "18389           1.4          93.918          -42.7      4.968       5228.1\n",
+            "...             ...             ...            ...        ...          ...\n",
+            "13820           1.4          93.918          -42.7      4.963       5228.1\n",
+            "39220          -1.8          93.369          -34.8      0.652       5008.7\n",
+            "39478          -1.8          93.749          -34.6      0.642       5008.7\n",
+            "38420          -3.4          92.431          -26.9      0.735       5017.5\n",
+            "36693          -2.9          92.963          -40.8      1.268       5076.2\n",
+            "\n",
+            "[69971 rows x 5 columns]\n",
+            "0.717554415400666\n",
+            "0.7193493566399611\n",
+            "Confusion matrix for Balanced Social/Economic GNB prediction:\n",
+            "[[2634  144]\n",
+            " [1012  329]]\n",
+            "AUC for Balanced Social/Economic GNB prediction:\n",
+            "0.7348436526924581\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "kAyv7W3cPQ-3"
+      },
+      "source": [
+        "##Results\n",
+        "After balancing the training set, the only slight change in result came from the score using the trainning set. In the past experiment the score was 0.7199816558310178 and for this experiment it was 0.717554415400666. The rest of the result remained the same.\n",
+        "\n",
+        "\n",
+        "---\n"
+      ],
+      "id": "kAyv7W3cPQ-3"
+    }
+  ]
+}
